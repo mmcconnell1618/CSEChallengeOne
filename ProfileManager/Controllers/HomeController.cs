@@ -5,13 +5,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ProfileManager.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace ProfileManager.Controllers
 {
     public class HomeController : Controller
     {
+        private IConfiguration _configuration;
+
+        public HomeController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         public IActionResult Index()
         {
+            ViewData["ConnString"] = _configuration.GetConnectionString("DefaultConnection");
             return View();
         }
 

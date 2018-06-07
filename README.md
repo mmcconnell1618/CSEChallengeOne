@@ -28,7 +28,7 @@ Make sure to replace "a_user_name" and "a_secure_password" with your own values.
 In your newly created storage account, add a blob container which will be used to store the employee images
 
 ### Application Setup
-1. In the Azure Portal, navigate to your web app and go to Properties->Connection Strings and add a connection string to your SQL database using the login information you created above.
+1. In the Azure Portal, navigate to your web app and go to Application Settings->Connection Strings and add a connection string to your SQL database using the login information you created above.
 
 ```
 data source=<your_db_server_name>.database.windows.net,1433;initial catalog=<your_databse_name>;persist security info=True;user id=<your_sql_username>;password=<your_sql_password>;MultipleActiveResultSets=True;App=EntityFramework

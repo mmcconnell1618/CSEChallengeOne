@@ -44,12 +44,12 @@ dotnet build
 ```
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<your connection string here>"
 ```
-5. Run the web app locally to verify it is working
+5. Run database migrations to create the schema in Azure
+```
+dotnet ef database update
+```
+6. Run the web app locally to verify it is working
 ```
 dotnet run
 ```
-6. Deploy from Visual Studio by opening the solution, then right-click on the ProfileManager web app and choose "publish." Follow the prompts and publish to your Azure Web App created above.
-
-
-
-
+7. Deploy from Visual Studio by opening the solution, then right-click on the ProfileManager web app and choose "publish." Follow the prompts and publish to your Azure Web App created above.

@@ -1,21 +1,21 @@
 # CSE Challenge One
 CSE Code Challenge One - Marcmc
 
-## Platform
+#### Platform
 Dotnet Core 2.1, ASP.NET MVC Core 2.1, EntityFramework Core 2.1
 
-## Requirements
+#### Requirements
 This is a web app designed to be deployed on Azure App Service. You will also need an Azure Storage Account and an Azure SQL Database.
 
-## Setup Instructions
+# Setup Instructions
 
-### Create Azure Resources
+## Create Azure Resources
 Open the [Azure portal](https://portal.azure.com, "Azure Portal") and create:
 1. A new Azure SQL Database
 2. A new Storage Account
 3. A new Azure Web App (with App Service Plan if needed)
 
-### Add a login to the Azure SQL Server
+## Add a login to the Azure SQL Server
 Connect to your Azure SQL database using a management tool or go to the "Query Editor" in the Azure Portal and run this command:
 
 ```
@@ -24,10 +24,10 @@ ALTER ROLE [db_owner] ADD MEMBER [a_user_name];
 ```
 Make sure to replace "a_user_name" and "a_secure_password" with your own values.
 
-### Storage Account Setup
+## Storage Account Setup
 In your newly created storage account, add a blob container which will be used to store the employee images
 
-### Application Setup
+## Application Setup
 1. In the Azure Portal, navigate to your web app and go to Application Settings->Connection Strings and add a connection string to your SQL database using the login information you created above.
 
 ```

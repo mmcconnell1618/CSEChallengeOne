@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using ProfileManager.BusinessLayer;
 
 namespace ProfileManager
 {
@@ -38,6 +39,8 @@ namespace ProfileManager
             services.AddDbContext<Datalayer.DatabaseContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
                 );
+
+            services.AddScoped<EmployeeService>();
 
         }
 

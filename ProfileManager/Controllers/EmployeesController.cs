@@ -7,22 +7,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ProfileManager.Datalayer;
 using ProfileManager.Models;
+using ProfileManager.BusinessLayer;
 
 namespace ProfileManager.Controllers
 {
     public class EmployeesController : Controller
     {
-        private readonly DatabaseContext _context;
+        private readonly EmployeeService _employees;
 
-        public EmployeesController(DatabaseContext context)
+        public EmployeesController(EmployeeService employeeService)
         {
-            _context = context;
+            _employees = employeeService;
         }
 
         // GET: Employees
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Employees.ToListAsync());
+            ViewBag.TotalCount = _employees.CountOfEmployees();                        
+            return View(await _employees.ListEmployeesAsync());
         }
 
         // GET: Employees/Details/5
@@ -33,8 +35,8 @@ namespace ProfileManager.Controllers
                 return NotFound();
             }
 
-            var employee = await _context.Employees
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var employee = await _employees.FindByIdAsync(id.Value);
+
             if (employee == null)
             {
                 return NotFound();
@@ -58,8 +60,13 @@ namespace ProfileManager.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(employee);
-                await _context.SaveChangesAsync();
+                bool isSaved = await _employees.Create(employee);
+
+                if (!isSaved)
+                {
+                    ViewBag.ErrorMessage = "An error occurred while saving.";
+                    return View(employee);
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(employee);
@@ -73,7 +80,7 @@ namespace ProfileManager.Controllers
                 return NotFound();
             }
 
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _employees.FindByIdAsync(id.Value);
             if (employee == null)
             {
                 return NotFound();
@@ -95,23 +102,15 @@ namespace ProfileManager.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                if(await _employees.Update(employee))
                 {
-                    _context.Update(employee);
-                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    if (!EmployeeExists(employee.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                    ViewBag.ErrorMessage = "An error occurred while updating the employee.";
+                    return View(employee);
+                }                
             }
             return View(employee);
         }
@@ -124,8 +123,8 @@ namespace ProfileManager.Controllers
                 return NotFound();
             }
 
-            var employee = await _context.Employees
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var employee = await _employees.FindByIdAsync(id.Value);
+
             if (employee == null)
             {
                 return NotFound();
@@ -139,15 +138,8 @@ namespace ProfileManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var employee = await _context.Employees.FindAsync(id);
-            _context.Employees.Remove(employee);
-            await _context.SaveChangesAsync();
+            await _employees.DeleteById(id);            
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool EmployeeExists(int id)
-        {
-            return _context.Employees.Any(e => e.Id == id);
-        }
+        }        
     }
 }

@@ -4,10 +4,11 @@
     ViewData["Title"] = "Create";
 }
 
-<h2>Create</h2>
-
-<h4>Employee</h4>
-<hr />
+<h2>Create Employee</h2>
+@if(ViewBag.ErrorMessage?.Length > 0)
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">

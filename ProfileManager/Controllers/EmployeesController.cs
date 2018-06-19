@@ -143,5 +143,10 @@ namespace ProfileManager.Controllers
             await _employees.DeleteById(id);            
             return RedirectToAction(nameof(Index));
         }        
+
+        public IActionResult Find(int employeeid)
+        {
+            return new RedirectResult("/employees/edit/" + employeeid);
+        }
     }
 }

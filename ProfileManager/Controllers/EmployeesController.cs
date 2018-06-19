@@ -14,10 +14,12 @@ namespace ProfileManager.Controllers
     public class EmployeesController : Controller
     {
         private readonly EmployeeService _employees;
+        private readonly StorageService _storageService;
 
-        public EmployeesController(EmployeeService employeeService)
+        public EmployeesController(EmployeeService employeeService, StorageService storageService)
         {
             _employees = employeeService;
+            _storageService = storageService;
         }
 
         // GET: Employees

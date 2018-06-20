@@ -1,4 +1,5 @@
 ﻿@model ProfileManager.Models.Employee
+@inject ProfileManager.BusinessLayer.StorageService StorageService
 
 @{
     ViewData["Title"] = "Edit";
@@ -10,7 +11,7 @@
     <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
 }
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-8">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
@@ -40,14 +41,24 @@
                 <span asp-validation-for="PhotoFileName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-default" />
+                <input type="submit" value="Save" class="btn btn-success" /> <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
+    <div class="col-md-4">
+        <div class="card">
+            <img src="@StorageService.FullPhotoUrl(Model.Id, Model.PhotoFileName)" alt="@Model.FirstName @Model.LastName" class="card-img-top" />
+        </div>
+        <div class="card bg-dark">
+            <div class="card-body text-center">
+                <a href="/employees" class="btn btn-secondary form-control">Back to List</a>
+                &nbsp;
+                <a href="/employees/verify/@Model.Id" class="btn btn-secondary form-control">Verify</a>
+                &nbsp;
+                <a href="/employees/delete/@Model.Id" class="btn btn-danger form-control">Delete</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

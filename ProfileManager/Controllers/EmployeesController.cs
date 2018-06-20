@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using ProfileManager.Datalayer;
 using ProfileManager.Models;
 using ProfileManager.BusinessLayer;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace ProfileManager.Controllers
 {
@@ -58,15 +60,28 @@ namespace ProfileManager.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Department,PhotoFileName,RowVersion")] Employee employee)
+        public async Task<IActionResult> Create([Bind("FirstName,LastName,Department,RowVersion")] Employee employee, IFormFile photo)
         {
             if (ModelState.IsValid)
             {
+                if (photo != null)
+                {
+                    // Grab file name and store with employee
+                    employee.PhotoFileName = Path.GetFileName(photo.FileName);
+                }                
                 bool isSaved = await _employees.Create(employee);
 
-                if (!isSaved)
+                if (isSaved)
                 {
-                    ViewBag.ErrorMessage = "An error occurred while saving.";
+                    if (photo != null)
+                    {
+                        // Upload Photo File to Blob Storage Here
+
+                    }
+                }
+                else
+                {                    
+                    ViewBag.ErrorMessage = "An error occurred while saving. Make sure a photo is selected";
                     return View(employee);
                 }
                 return RedirectToAction(nameof(Index));

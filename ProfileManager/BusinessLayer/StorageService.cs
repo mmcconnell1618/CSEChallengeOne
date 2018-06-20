@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace ProfileManager.BusinessLayer
 {
-    public class StorageService
+    public class StorageService: IStorageService
     {
         // Configuration Settings
         private readonly IConfiguration Configuration;
@@ -53,7 +53,14 @@ namespace ProfileManager.BusinessLayer
 
         public string FullPhotoUrl(int id, string fileName)
         {
+            if (id < 1 || fileName.Trim().Length < 1) return NoPhotoUrl();
+            
             return $"{BaseUrl}/{ContainerName}/{id.ToString()}/{fileName}"; 
+        }
+
+        public string NoPhotoUrl()
+        {
+            return $"{BaseUrl}/{ContainerName}/NoPhoto.png";
         }
 
         public async Task<bool> WriteEmployeePhoto(int employeeId, string photoName, IFormFile postedFile)
@@ -70,7 +77,7 @@ namespace ProfileManager.BusinessLayer
             return true;
         }
 
-        public static string FixUpPathing(string input)
+        public string FixUpPathing(string input)
 
         {
             string output = input.Trim();

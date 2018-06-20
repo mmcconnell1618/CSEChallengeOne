@@ -15,10 +15,10 @@ namespace ProfileManager.Controllers
 {
     public class EmployeesController : Controller
     {
-        private readonly EmployeeService _employees;
-        private readonly StorageService _storageService;
+        private readonly IEmployeeService _employees;
+        private readonly IStorageService _storageService;
 
-        public EmployeesController(EmployeeService employeeService, StorageService storageService)
+        public EmployeesController(IEmployeeService employeeService, IStorageService storageService)
         {
             _employees = employeeService;
             _storageService = storageService;
@@ -77,6 +77,9 @@ namespace ProfileManager.Controllers
                     {
                         // Upload Photo File to Blob Storage Here
                         await _storageService.WriteEmployeePhoto(employee.Id, employee.PhotoFileName, photo);
+
+                        // Check Faces
+                        return new RedirectResult("/employees/edit/" + employee.Id + "?highlightFaces=true");                                                   
                     }
                 }
                 else
@@ -84,13 +87,12 @@ namespace ProfileManager.Controllers
                     ViewBag.ErrorMessage = "An error occurred while saving. Make sure a photo is selected";
                     return View(employee);
                 }
-                return RedirectToAction(nameof(Index));
             }
             return View(employee);
         }
 
         // GET: Employees/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id, bool highlightFaces = false)
         {
             if (id == null)
             {
@@ -102,6 +104,22 @@ namespace ProfileManager.Controllers
             {
                 return NotFound();
             }
+
+            var photoData = new EmployeePhotoViewModel();
+            photoData.Url = _storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);           
+            photoData.AltText = employee.FirstName + " " + employee.LastName;
+            if (highlightFaces == true)
+            {
+                // Check Faces
+                var validPhoto = await _employees.ValidatePhoto(employee);
+                photoData.MapFaces(validPhoto.Faces);
+                if (!validPhoto.IsValidEmployeePhoto)
+                {
+                    ViewBag.ErrorMessage = "There was an error with the photo.";
+                }                
+            }
+            ViewBag.PhotoData = photoData;
+
             return View(employee);
         }
 
@@ -117,12 +135,20 @@ namespace ProfileManager.Controllers
                 return NotFound();
             }
 
+            // Populate Model for Photo
+            var photoData = new EmployeePhotoViewModel();
+            photoData.Url = _storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);
+            photoData.AltText = employee.FirstName + " " + employee.LastName;
+
+
             if (ModelState.IsValid)
             {
                 if (photo != null)
                 {
                     // Grab file name and store with employee
                     employee.PhotoFileName = Path.GetFileName(photo.FileName);
+                    photoData.Url = _storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);
+                    photoData.AltText = employee.FirstName + " " + employee.LastName;
                 }
 
                 if (await _employees.Update(employee))
@@ -131,15 +157,32 @@ namespace ProfileManager.Controllers
                     {
                         // Upload Photo File to Blob Storage Here
                         await _storageService.WriteEmployeePhoto(employee.Id, employee.PhotoFileName, photo);
-                    }
+
+                        // Check Faces
+                        var validPhoto = await _employees.ValidatePhoto(employee);
+                        photoData.MapFaces(validPhoto.Faces);
+                        if (!validPhoto.IsValidEmployeePhoto)
+                        {
+                            ViewBag.ErrorMessage = "There was an error with the photo.";
+                        }
+                        else
+                        {
+                            ViewBag.SuccessMessage = "Changes Saved";
+                        }
+                        ViewBag.PhotoData = photoData;
+                        return View(employee);
+                    }                    
                     return RedirectToAction(nameof(Index));
                 }
                 else
                 {
-                    ViewBag.ErrorMessage = "An error occurred while updating the employee.";
+                    ViewBag.ErrorMessage = "An error occurred while updating the employee.";                  
+                    ViewBag.PhotoData = photoData;                
                     return View(employee);
                 }                
             }
+
+            ViewBag.PhotoData = photoData;
             return View(employee);
         }
 
@@ -173,6 +216,32 @@ namespace ProfileManager.Controllers
         public IActionResult Find(int employeeid)
         {
             return new RedirectResult("/employees/edit/" + employeeid);
+        }
+
+        // GET: Employees/Verify/5
+        public async Task<IActionResult> Verify(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var employee = await _employees.FindByIdAsync(id.Value);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            return View(employee);
+        }
+
+        // POST: Employees/Delete/5
+        [HttpPost, ActionName("Verify")]
+        public async Task<IActionResult> VerifySubmit(int id, IFormFile photo)
+        {
+            var employee = await _employees.FindByIdAsync(id);
+
+            // Do Verification Here
+
+            return View(employee);
         }
     }
 }

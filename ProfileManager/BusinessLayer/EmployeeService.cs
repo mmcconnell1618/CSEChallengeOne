@@ -8,12 +8,16 @@ using ProfileManager.Datalayer;
 
 namespace ProfileManager.BusinessLayer
 {
-    public class EmployeeService
+    public class EmployeeService: IEmployeeService
     {
         private DatabaseContext _dbcontext;
+        private IFaceService _faceService;
+        private IStorageService _storageService;
 
-        public EmployeeService(DatabaseContext dbcontext)
+        public EmployeeService(DatabaseContext dbcontext, IFaceService faceService, IStorageService storageService)
         {
+            _faceService = faceService;
+            _storageService = storageService;
             _dbcontext = dbcontext;
         }
 
@@ -79,10 +83,51 @@ namespace ProfileManager.BusinessLayer
             }
             catch (DbUpdateConcurrencyException dex)
             {
-                Console.WriteLine(dex.Message);
-                return false;
+                foreach (var entry in dex.Entries)
+                {
+                    if (entry.Entity is Employee)
+                    {
+                        var proposedValues = entry.CurrentValues;
+                        var databaseValues = entry.GetDatabaseValues();
+
+                        /*foreach (var property in proposedValues.Properties)
+                        {
+                            var proposedValue = proposedValues[property];
+                            var databaseValue = databaseValues[property];
+
+                            proposedValues[property] = proposedValue;                            
+                        }*/
+
+                        // Refresh original values to bypass next concurrency check
+                        entry.OriginalValues.SetValues(databaseValues);
+                        try
+                        {
+                            await _dbcontext.SaveChangesAsync();
+                            return true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+
+                    }
+                    else
+                    {
+                        /*throw new NotSupportedException(
+                            "Don't know how to handle concurrency conflicts for "
+                            + entry.Metadata.Name);*/
+                        return false;
+                    }
+                }
             }
             return true;
+        }
+
+        public async Task<FaceValidationResult> ValidatePhoto(Employee employee)
+        {
+            var result = new FaceValidationResult();
+            result.Faces = await _faceService.FindFaces(_storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName));
+            return result;
         }
     }
 }

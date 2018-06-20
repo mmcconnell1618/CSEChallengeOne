@@ -33,6 +33,14 @@ dotnet user-secrets set "StorageContainerName" "<containername>"
 dotnet user-secrets set "StorageConnectionString" "<connection string to your storage account>"
 ```
 
+## Face API Setup
+1. In the Azure Portal, create a new Face API
+2. Update the appsettings.json file with the correct URL to your region. i.e. (https://eastus2.api.cognitive.microsoft.com/face/v1.0)
+3. Save the face api key to user-secrets
+```
+dotnet user-secrets set "FaceApiKey" "<your face api key>"
+```
+
 ## Application Setup
 1. In the Azure Portal, navigate to your web app and go to Application Settings->Connection Strings and add a connection string to your SQL database using the login information you created above.
 

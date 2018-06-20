@@ -42,8 +42,9 @@ namespace ProfileManager
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
                 );
 
-            services.AddScoped<EmployeeService>();
-            services.AddScoped<StorageService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IStorageService, StorageService>();
+            services.AddScoped<IFaceService, FaceService>(); 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

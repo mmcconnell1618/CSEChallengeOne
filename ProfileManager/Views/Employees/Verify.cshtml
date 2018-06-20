@@ -2,13 +2,11 @@
 @inject ProfileManager.BusinessLayer.IStorageService StorageService
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Verify Employee Photo";
 }
-
-<h2>Delete Employee?</h2>
+<h2>Employee Verification</h2>
 
 <div class="row">
-    <div class="col-md-4">&nbsp;</div>
     <div class="col-md-4">
         <div class="card">
             <img src="@StorageService.FullPhotoUrl(Model.Id, Model.PhotoFileName)" alt="@Model.FirstName @Model.LastName" class="card-img-top" />
@@ -16,12 +14,17 @@
                 <div class="card-title font-weight-bold">@Html.DisplayFor(modelItem => Model.FirstName) @Html.DisplayFor(modelItem => Model.LastName)</div>
                 <p class="card-text font-italic">@Html.DisplayFor(modelItem => Model.Department)</p>
                 <p class="card-text">ID: @Html.DisplayFor(modelItem => Model.Id)</p>
-                <form asp-action="Delete">
-                    <input type="hidden" asp-for="Id" />
-                    <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model.Id">Cancel</a>  <input type="submit" value="Delete Employee" class="btn btn-danger" />
-                </form>
+                <a class="btn btn-secondary" asp-action="Index">Back to List</a>
             </div>
         </div>
     </div>
-    <div class="col-md-4">&nbsp;</div>    
+    <div class="col-md-4">&nbsp;</div>
+    <div class="col-md-4">
+        FORM HERE to VERIFY
+        <form asp-action="Verify">
+            <input type="hidden" asp-for="Id" />
+            <input type="file" name="photo" id="photo" class="form-control" />
+            <input type="submit" value="Check Photo" class="btn btn-primary" />
+        </form>
+    </div>
 </div>

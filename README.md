@@ -25,7 +25,13 @@ ALTER ROLE [db_owner] ADD MEMBER [a_user_name];
 Make sure to replace "a_user_name" and "a_secure_password" with your own values.
 
 ## Storage Account Setup
-In your newly created storage account, add a blob container which will be used to store the employee images
+1. In your newly created storage account, add a blob container which will be used to store the employee images
+2. Save storage account settings in the appsettings.json file or user-secrets
+```
+dotnet user-secrets set "StorageUrl" "https://<storageaccountname>.blob.core.windows.net"
+dotnet user-secrets set "StorageContainerName" "<containername>"
+dotnet user-secrets set "StorageConnectionString" "<connection string to your storage account>"
+```
 
 ## Application Setup
 1. In the Azure Portal, navigate to your web app and go to Application Settings->Connection Strings and add a connection string to your SQL database using the login information you created above.

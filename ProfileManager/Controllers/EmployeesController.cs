@@ -76,7 +76,7 @@ namespace ProfileManager.Controllers
                     if (photo != null)
                     {
                         // Upload Photo File to Blob Storage Here
-
+                        await _storageService.WriteEmployeePhoto(employee.Id, employee.PhotoFileName, photo);
                     }
                 }
                 else
@@ -110,7 +110,7 @@ namespace ProfileManager.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Department,PhotoFileName,RowVersion")] Employee employee)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Department,PhotoFileName,RowVersion")] Employee employee, IFormFile photo)
         {
             if (id != employee.Id)
             {
@@ -119,8 +119,19 @@ namespace ProfileManager.Controllers
 
             if (ModelState.IsValid)
             {
-                if(await _employees.Update(employee))
+                if (photo != null)
                 {
+                    // Grab file name and store with employee
+                    employee.PhotoFileName = Path.GetFileName(photo.FileName);
+                }
+
+                if (await _employees.Update(employee))
+                {
+                    if (photo != null)
+                    {
+                        // Upload Photo File to Blob Storage Here
+                        await _storageService.WriteEmployeePhoto(employee.Id, employee.PhotoFileName, photo);
+                    }
                     return RedirectToAction(nameof(Index));
                 }
                 else

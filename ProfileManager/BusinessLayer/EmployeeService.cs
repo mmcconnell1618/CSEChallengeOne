@@ -63,6 +63,8 @@ namespace ProfileManager.BusinessLayer
             var employee = await _dbcontext.Employees.FindAsync(id);
             _dbcontext.Employees.Remove(employee);
             await _dbcontext.SaveChangesAsync();
+
+            //TODO: Consider cleaning up Blob files on delete
         }
 
         public async Task<bool> Update(Employee employee)

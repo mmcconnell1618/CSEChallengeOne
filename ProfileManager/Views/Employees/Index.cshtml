@@ -23,7 +23,7 @@
                                 <div class="card-body text-center">
                                     <div class="card-title font-weight-bold">@Html.DisplayFor(modelItem => item.FirstName) @Html.DisplayFor(modelItem => item.LastName)</div>
                                     <p class="card-text font-italic">@Html.DisplayFor(modelItem => item.Department)</p>
-                                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">Details</a> <a href="/employees/verify/@item.Id" class="btn btn-secondary">Verify</a>
+                                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">Details</a> <!--<a href="/employees/verify/@item.Id" class="btn btn-secondary">Verify</a>-->
                                 </div>
                             </div>  
                     index++;

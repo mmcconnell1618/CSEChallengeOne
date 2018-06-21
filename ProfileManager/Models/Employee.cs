@@ -60,6 +60,9 @@ namespace ProfileManager.Models
         [StringLength(255)]
         public string PhotoFileName { get; set; }
 
+        public int PhotoWidth { get; set; }
+        public int PhotoHeight { get; set; }
+
         /// <summary>
         /// Entity Framework Managed timestamp for concurrency
         /// </summary>

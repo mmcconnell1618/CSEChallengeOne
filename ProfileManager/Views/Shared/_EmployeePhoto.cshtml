@@ -1,2 +1,36 @@
 ﻿@model ProfileManager.Models.EmployeePhotoViewModel
-<img src="@Model.Url" alt="@Model.AltText" width="256" />
+@{
+    int imageWidth = 345;
+    
+    var widthScaler = Model.WidthScaleFactor(imageWidth);
+    int imageHeight = (int)(Model.OriginalImageHeight * widthScaler);
+    var heightScaler = Model.HeightScaleFactor(imageHeight);
+}
+    <div class="photo-wrapper">
+        <img src="@Model.Url" alt="@Model.AltText" width="@(imageWidth)" style="position:relative" />
+        @foreach (var face in Model.Faces)
+        {
+            var scaled = face.ScaledOverlayPosition(widthScaler, heightScaler);
+
+            switch (face.OverlayType)
+            {
+                case FaceMarkerType.Error:
+                    <div class="facemarker facemarker-error" style="position:absolute;top:@(scaled.Top)px;left:@(scaled.Left)px;width:@(scaled.Width)px;height:@(scaled.Height)px;">&nbsp;</div>
+                    break;
+                case FaceMarkerType.Verified:
+                    <div class="facemarker facemarker-verified" style="position:absolute;top:@(scaled.Top)px;left:@(scaled.Left)px;width:@(scaled.Width)px;height:@(scaled.Height)px;">&nbsp;</div>
+                    break;
+                case FaceMarkerType.Generic:
+                    <div class="facemarker facemarker-generic" style="position:absolute;top:@(scaled.Top)px;left:@(scaled.Left)px;width:@(scaled.Width)px;height:@(scaled.Height)px;">&nbsp;</div>
+                    break;
+                default:
+                    break;
+            }
+        }
+        @if (Model.ErrorMessage.Length > 0)
+        {
+                    <div class="facemarker-wrapper">
+                        <div class="facemarker-message">@Model.ErrorMessage</div>
+                    </div>            
+        }
+    </div>

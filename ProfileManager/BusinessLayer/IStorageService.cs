@@ -13,7 +13,7 @@ namespace ProfileManager.BusinessLayer
 
         string NoPhotoUrl();
 
-        Task<bool> WriteEmployeePhoto(int employeeId, string photoName, IFormFile postedFile);
+        Task<WritePhotoResponse> WriteEmployeePhoto(int employeeId, string photoName, IFormFile postedFile);
 
         Task<bool> WriteFile(string filePath, IFormFile postedFile);
 

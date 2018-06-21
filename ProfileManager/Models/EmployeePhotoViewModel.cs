@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.ProjectOxford.Face.Contract;
+using ProfileManager.BusinessLayer;
 
 namespace ProfileManager.Models
 {
@@ -12,13 +13,20 @@ namespace ProfileManager.Models
         Error = 1,
         Verified = 2
     }
-
+   
     public class FaceMarker
     {
-        public int Top { get; set; }
-        public int Left { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public FaceRectangle OverlayPosition { get; set; }
+        
+        public FaceRectangle ScaledOverlayPosition(float widthScaler, float heightScaler)
+        {
+            var scaledRectangle = new FaceRectangle();
+            scaledRectangle.Top = (int)(OverlayPosition.Top * heightScaler);
+            scaledRectangle.Height = (int)(OverlayPosition.Height * heightScaler);
+            scaledRectangle.Left = (int)(OverlayPosition.Left * widthScaler);
+            scaledRectangle.Width = (int)(OverlayPosition.Width * widthScaler);
+            return scaledRectangle;
+        }
 
         public FaceMarkerType OverlayType { get; set; }
         public string Message { get; set; }
@@ -33,10 +41,7 @@ namespace ProfileManager.Models
         {
             OverlayType = FaceMarkerType.Generic;
             Message = "";
-            Height = rect.Height;
-            Width = rect.Width;
-            Top = rect.Top;
-            Left = rect.Left;
+            OverlayPosition = rect;
         }
     }
 
@@ -44,6 +49,18 @@ namespace ProfileManager.Models
     {
         public string Url { get; set; }
         public string AltText { get; set; }
+
+        public int OriginalImageWidth { get; set; }
+        public int OriginalImageHeight { get; set; }
+
+        public float WidthScaleFactor(float currentWidth)
+        {
+            return currentWidth / OriginalImageWidth;
+        }
+        public float HeightScaleFactor(float currentHeight)
+        {
+            return currentHeight / OriginalImageHeight;
+        }
 
         public List<FaceMarker> Faces { get; set; }
 
@@ -53,6 +70,16 @@ namespace ProfileManager.Models
         {
             this.ErrorMessage = string.Empty;
             this.Faces = new List<FaceMarker>();
+        }
+
+        public EmployeePhotoViewModel(Employee employee, IStorageService storageService)
+        {
+            this.ErrorMessage = string.Empty;
+            this.Faces = new List<FaceMarker>();
+            this.Url = storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);
+            this.AltText = employee.FirstName + " " + employee.LastName;
+            this.OriginalImageWidth = employee.PhotoWidth;
+            this.OriginalImageHeight = employee.PhotoHeight;
         }
 
         public void MapFaces(Face[] faceData)
@@ -78,6 +105,7 @@ namespace ProfileManager.Models
             {
                 // Just one face
                 var marker = new FaceMarker(faceData[0].FaceRectangle);
+                this.Faces.Add(marker);
             }
         }
     }

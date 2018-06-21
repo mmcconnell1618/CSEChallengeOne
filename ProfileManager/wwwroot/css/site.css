@@ -35,3 +35,38 @@ body {
         display: none;
     }
 }
+
+.facemarker-wrapper {
+   position:absolute;
+   top:85%;left:0;
+   width:100%;
+}
+.facemarker-message
+{
+    position:relative;
+    margin:0 50px;
+    /*position:relative;
+    margin:-100% -50% 0 0;*/
+    border:solid 4px red;
+    color:red;
+    background:white;
+    padding:3px 7px;
+    text-align:center;
+}
+.facemarker
+{
+    position:absolute;
+    border:solid 4px;
+}
+.facemarker-error
+{
+    border-color:red;
+}
+.facemarker-generic
+{
+    border-color:orange;
+}
+.facemarker-verified
+{
+    border-color:green;
+}

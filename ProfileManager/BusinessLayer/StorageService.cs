@@ -7,6 +7,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.AspNetCore.Http;
+using System.Drawing;
 
 namespace ProfileManager.BusinessLayer
 {
@@ -63,10 +64,26 @@ namespace ProfileManager.BusinessLayer
             return $"{BaseUrl}/{ContainerName}/NoPhoto.png";
         }
 
-        public async Task<bool> WriteEmployeePhoto(int employeeId, string photoName, IFormFile postedFile)
+        public async Task<WritePhotoResponse> WriteEmployeePhoto(int employeeId, string photoName, IFormFile postedFile)
         {
+            var response = new WritePhotoResponse();
+
+            // Get Image Dimensions
+            using (var photoStream = postedFile.OpenReadStream())
+            {
+                var uploadedImage = Image.FromStream(photoStream);
+                response.ImageHeight = uploadedImage.Height;
+                response.ImageWidth = uploadedImage.Width;
+
+                // Reset Stream so it can be uploaded to storage
+                photoStream.Seek(0, System.IO.SeekOrigin.Begin);
+            }                
+
+            // Upload file to Blob Storage
             string filePath = $"{employeeId.ToString()}/{photoName}";
-            return await WriteFile(filePath, postedFile);
+            response.Success = await WriteFile(filePath, postedFile);
+
+            return response;
         }
 
         public async Task<bool> WriteFile(string filePath, IFormFile postedFile)

@@ -63,12 +63,7 @@ namespace ProfileManager.Controllers
         public async Task<IActionResult> Create([Bind("FirstName,LastName,Department,RowVersion")] Employee employee, IFormFile photo)
         {
             if (ModelState.IsValid)
-            {
-                if (photo != null)
-                {
-                    // Grab file name and store with employee
-                    employee.PhotoFileName = Path.GetFileName(photo.FileName);
-                }                
+            {                        
                 bool isSaved = await _employees.Create(employee);
 
                 if (isSaved)
@@ -76,7 +71,17 @@ namespace ProfileManager.Controllers
                     if (photo != null)
                     {
                         // Upload Photo File to Blob Storage Here
-                        await _storageService.WriteEmployeePhoto(employee.Id, employee.PhotoFileName, photo);
+                        var photoFileName = Path.GetFileName(photo.FileName);
+
+                        var photoData = await _storageService.WriteEmployeePhoto(employee.Id, photoFileName, photo);
+                        if (photoData.Success)
+                        {
+                            var employeeToUpdate = await _employees.FindByIdAsync(employee.Id);
+                            employeeToUpdate.PhotoHeight = photoData.ImageHeight;
+                            employeeToUpdate.PhotoWidth = photoData.ImageWidth;
+                            employeeToUpdate.PhotoFileName = photoFileName;
+                            await _employees.Update(employeeToUpdate);
+                        }
 
                         // Check Faces
                         return new RedirectResult("/employees/edit/" + employee.Id + "?highlightFaces=true");                                                   
@@ -105,9 +110,9 @@ namespace ProfileManager.Controllers
                 return NotFound();
             }
 
-            var photoData = new EmployeePhotoViewModel();
-            photoData.Url = _storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);           
-            photoData.AltText = employee.FirstName + " " + employee.LastName;
+            // Populate Photo View Model
+            var photoData = new EmployeePhotoViewModel(employee, _storageService);
+
             if (highlightFaces == true)
             {
                 // Check Faces
@@ -136,27 +141,34 @@ namespace ProfileManager.Controllers
             }
 
             // Populate Model for Photo
-            var photoData = new EmployeePhotoViewModel();
-            photoData.Url = _storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);
-            photoData.AltText = employee.FirstName + " " + employee.LastName;
-
+            var photoData = new EmployeePhotoViewModel(employee, _storageService);
 
             if (ModelState.IsValid)
             {
-                if (photo != null)
-                {
-                    // Grab file name and store with employee
-                    employee.PhotoFileName = Path.GetFileName(photo.FileName);
-                    photoData.Url = _storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);
-                    photoData.AltText = employee.FirstName + " " + employee.LastName;
-                }
 
                 if (await _employees.Update(employee))
                 {
                     if (photo != null)
                     {
                         // Upload Photo File to Blob Storage Here
-                        await _storageService.WriteEmployeePhoto(employee.Id, employee.PhotoFileName, photo);
+                        var photoFileName = Path.GetFileName(photo.FileName);
+
+                        var photoUploadData = await _storageService.WriteEmployeePhoto(employee.Id, photoFileName, photo);
+                        if (photoUploadData.Success)
+                        {
+                            var employeeToUpdate = await _employees.FindByIdAsync(employee.Id);
+                            employeeToUpdate.PhotoHeight = photoUploadData.ImageHeight;
+                            employeeToUpdate.PhotoWidth = photoUploadData.ImageWidth;
+                            employeeToUpdate.PhotoFileName = photoFileName;
+                            await _employees.Update(employeeToUpdate);
+
+                            // Update ViewModel with new photo information
+                            photoData = new EmployeePhotoViewModel(employeeToUpdate, _storageService);
+                            /*photoData.Url = _storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);
+                            photoData.AltText = employee.FirstName + " " + employee.LastName;
+                            photoData.OriginalImageHeight = photoUploadData.ImageHeight;
+                            photoData.OriginalImageWidth = photoUploadData.ImageWidth;*/
+                        }
 
                         // Check Faces
                         var validPhoto = await _employees.ValidatePhoto(employee);

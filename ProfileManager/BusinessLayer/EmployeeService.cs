@@ -40,7 +40,7 @@ namespace ProfileManager.BusinessLayer
             return result;
         }
 
-        public async Task<bool> Create(Employee employee)
+        public async Task<bool> CreateAsync(Employee employee)
         {
             _dbcontext.Add(employee);
             try
@@ -55,14 +55,14 @@ namespace ProfileManager.BusinessLayer
             }
         }
 
-        public async Task<bool> EmployeeExists(int id)
+        public async Task<bool> EmployeeExistsAsync(int id)
         {
             var employee = await FindByIdAsync(id);
             if (employee == null) return false;
             return employee.Id == id;
         }
 
-        public async Task DeleteById(int id)
+        public async Task DeleteByIdAsync(int id)
         {
             var employee = await _dbcontext.Employees.FindAsync(id);
             _dbcontext.Employees.Remove(employee);
@@ -71,7 +71,7 @@ namespace ProfileManager.BusinessLayer
             //TODO: Consider cleaning up Blob files on delete
         }
 
-        public async Task<bool> Update(Employee employee)
+        public async Task<bool> UpdateAsync(Employee employee)
         {
             try
             {
@@ -123,11 +123,17 @@ namespace ProfileManager.BusinessLayer
             return true;
         }
 
-        public async Task<FaceValidationResult> ValidatePhoto(Employee employee)
+        public async Task<FaceValidationResult> ValidatePhotoAsync(Employee employee)
         {
             var result = new FaceValidationResult();
             result.Faces = await _faceService.FindFaces(_storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName));
             return result;
+        }
+
+        public async Task<List<FaceVerificationResult>> VerifyPhotoAsync(Employee employee, string toVerifyImageUrl)
+        {
+            var knownImageUrl = _storageService.FullPhotoUrl(employee.Id, employee.PhotoFileName);
+            return await _faceService.VerifyFacesMatch(knownImageUrl, toVerifyImageUrl);
         }
     }
 }

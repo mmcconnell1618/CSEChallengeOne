@@ -82,7 +82,7 @@ namespace ProfileManager.Models
             this.OriginalImageHeight = employee.PhotoHeight;
         }
 
-        public void MapFaces(Face[] faceData)
+        public void MapFacesForValidation(Face[] faceData)
         {
             if (faceData.Length < 1)
             {
@@ -108,5 +108,25 @@ namespace ProfileManager.Models
                 this.Faces.Add(marker);
             }
         }
+
+        public void MapFacesForVerification(List<FaceVerificationResult> verificationData)
+        {
+            foreach(var verifyResult in verificationData)
+            {
+                var marker = new FaceMarker(verifyResult.FaceToVerify.FaceRectangle);
+                if (verifyResult.IsMatch)
+                {                    
+                    marker.OverlayType = FaceMarkerType.Verified;
+                    marker.Message = this.AltText;
+                }
+                else
+                {
+                    marker.OverlayType = FaceMarkerType.Error;
+                }
+                this.Faces.Add(marker);
+            }
+        }
+
+
     }
 }

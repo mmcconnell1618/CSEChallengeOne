@@ -14,14 +14,16 @@ namespace ProfileManager.BusinessLayer
 
         Task<Employee> FindByIdAsync(int id);
 
-        Task<bool> Create(Employee employee);
+        Task<bool> CreateAsync(Employee employee);
 
-        Task<bool> EmployeeExists(int id);
+        Task<bool> EmployeeExistsAsync(int id);
 
-        Task DeleteById(int id);
+        Task DeleteByIdAsync(int id);
 
-        Task<bool> Update(Employee employee);
+        Task<bool> UpdateAsync(Employee employee);
 
-        Task<FaceValidationResult> ValidatePhoto(Employee employee);
+        Task<FaceValidationResult> ValidatePhotoAsync(Employee employee);
+
+        Task<List<FaceVerificationResult>> VerifyPhotoAsync(Employee employee, string toVerifyImageUrl);
     }
 }

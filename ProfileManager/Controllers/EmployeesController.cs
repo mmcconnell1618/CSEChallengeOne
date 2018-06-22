@@ -64,7 +64,7 @@ namespace ProfileManager.Controllers
         {
             if (ModelState.IsValid)
             {                        
-                bool isSaved = await _employees.Create(employee);
+                bool isSaved = await _employees.CreateAsync(employee);
 
                 if (isSaved)
                 {
@@ -80,7 +80,7 @@ namespace ProfileManager.Controllers
                             employeeToUpdate.PhotoHeight = photoData.ImageHeight;
                             employeeToUpdate.PhotoWidth = photoData.ImageWidth;
                             employeeToUpdate.PhotoFileName = photoFileName;
-                            await _employees.Update(employeeToUpdate);
+                            await _employees.UpdateAsync(employeeToUpdate);
                         }
 
                         // Check Faces
@@ -116,8 +116,8 @@ namespace ProfileManager.Controllers
             if (highlightFaces == true)
             {
                 // Check Faces
-                var validPhoto = await _employees.ValidatePhoto(employee);
-                photoData.MapFaces(validPhoto.Faces);
+                var validPhoto = await _employees.ValidatePhotoAsync(employee);
+                photoData.MapFacesForValidation(validPhoto.Faces);
                 if (!validPhoto.IsValidEmployeePhoto)
                 {
                     ViewBag.ErrorMessage = "There was an error with the photo.";
@@ -146,7 +146,7 @@ namespace ProfileManager.Controllers
             if (ModelState.IsValid)
             {
 
-                if (await _employees.Update(employee))
+                if (await _employees.UpdateAsync(employee))
                 {
                     if (photo != null)
                     {
@@ -160,7 +160,7 @@ namespace ProfileManager.Controllers
                             employeeToUpdate.PhotoHeight = photoUploadData.ImageHeight;
                             employeeToUpdate.PhotoWidth = photoUploadData.ImageWidth;
                             employeeToUpdate.PhotoFileName = photoFileName;
-                            await _employees.Update(employeeToUpdate);
+                            await _employees.UpdateAsync(employeeToUpdate);
 
                             // Update ViewModel with new photo information
                             photoData = new EmployeePhotoViewModel(employeeToUpdate, _storageService);
@@ -171,8 +171,8 @@ namespace ProfileManager.Controllers
                         }
 
                         // Check Faces
-                        var validPhoto = await _employees.ValidatePhoto(employee);
-                        photoData.MapFaces(validPhoto.Faces);
+                        var validPhoto = await _employees.ValidatePhotoAsync(employee);
+                        photoData.MapFacesForValidation(validPhoto.Faces);
                         if (!validPhoto.IsValidEmployeePhoto)
                         {
                             ViewBag.ErrorMessage = "There was an error with the photo.";
@@ -221,7 +221,7 @@ namespace ProfileManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _employees.DeleteById(id);            
+            await _employees.DeleteByIdAsync(id);            
             return RedirectToAction(nameof(Index));
         }        
 
@@ -242,6 +242,19 @@ namespace ProfileManager.Controllers
             {
                 return NotFound();
             }
+
+
+            // Populate Photo View Model
+            var photoData = new EmployeePhotoViewModel(employee, _storageService);
+            var validPhoto = await _employees.ValidatePhotoAsync(employee);
+            photoData.MapFacesForValidation(validPhoto.Faces);
+            if (!validPhoto.IsValidEmployeePhoto)
+            {
+                ViewBag.ErrorMessage = "There was an error with the photo.";
+            }
+            ViewBag.KnownPhotoData = photoData;
+            ViewBag.ToVerifyPhotoData = new EmployeePhotoViewModel();
+
             return View(employee);
         }
 
@@ -251,7 +264,37 @@ namespace ProfileManager.Controllers
         {
             var employee = await _employees.FindByIdAsync(id);
 
-            // Do Verification Here
+            // Populate Known Photo View Model
+            var photoData = new EmployeePhotoViewModel(employee, _storageService);
+            var validPhoto = await _employees.ValidatePhotoAsync(employee);
+            photoData.MapFacesForValidation(validPhoto.Faces);
+            if (!validPhoto.IsValidEmployeePhoto)
+            {
+                ViewBag.ErrorMessage = "There was an error with the photo.";
+            }
+            ViewBag.KnownPhotoData = photoData;
+
+            // Upload the Verification Photo to Blob Storage
+            var uniqueVerifyPath = "verify/" + System.Guid.NewGuid().ToString() + Path.GetExtension(photo.FileName);
+            var photoUploadData = await _storageService.WriteEmployeePhoto(employee.Id, uniqueVerifyPath, photo);
+            var verifyFullUrl = _storageService.FullPhotoUrl(employee.Id, uniqueVerifyPath);
+
+            // Run Verification
+            var verifyData = await _employees.VerifyPhotoAsync(employee, verifyFullUrl);
+
+            // Populate Photo Data for Verification Matches
+            var verifyPhotoData = new EmployeePhotoViewModel(employee, _storageService);
+            verifyPhotoData.Url = verifyFullUrl;
+            verifyPhotoData.OriginalImageHeight = photoUploadData.ImageHeight;
+            verifyPhotoData.OriginalImageWidth = photoUploadData.ImageWidth;            
+            verifyPhotoData.MapFacesForVerification(verifyData);
+            ViewBag.ToVerifyPhotoData = verifyPhotoData;
+
+            ViewBag.IsMatch = false;
+            if (verifyData.Where(y => y.IsMatch == true).Count() > 0)
+            {
+                ViewBag.IsMatch = true;
+            }
 
             return View(employee);
         }

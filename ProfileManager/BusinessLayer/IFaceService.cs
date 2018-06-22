@@ -10,5 +10,7 @@ namespace ProfileManager.BusinessLayer
     public interface IFaceService
     {
         Task<Face[]> FindFaces(string imageUrl);
+
+        Task<List<FaceVerificationResult>> VerifyFacesMatch(string knownPersonImageUrl, string toVerifyImageUrl);
     }
 }

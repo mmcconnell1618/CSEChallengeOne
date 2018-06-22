@@ -9,7 +9,7 @@
 <div class="row">
     <div class="col-md-4">
         <div class="card">
-            <img src="@StorageService.FullPhotoUrl(Model.Id, Model.PhotoFileName)" alt="@Model.FirstName @Model.LastName" class="card-img-top" />
+            <partial name="_EmployeePhoto" model="ViewBag.KnownPhotoData" />
             <div class="card-body text-center">
                 <div class="card-title font-weight-bold">@Html.DisplayFor(modelItem => Model.FirstName) @Html.DisplayFor(modelItem => Model.LastName)</div>
                 <p class="card-text font-italic">@Html.DisplayFor(modelItem => Model.Department)</p>
@@ -18,13 +18,26 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">&nbsp;</div>
     <div class="col-md-4">
-        FORM HERE to VERIFY
-        <form asp-action="Verify">
-            <input type="hidden" asp-for="Id" />
-            <input type="file" name="photo" id="photo" class="form-control" />
-            <input type="submit" value="Check Photo" class="btn btn-primary" />
-        </form>
+        @if(ViewBag.IsMatch == true)
+        {
+            <div class="alert alert-success">Match Found!</div>
+        }
+        else
+        {
+            <div class="alert alert-danger">No Match!</div>
+        }
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <partial name="_EmployeePhoto" model="ViewBag.ToVerifyPhotoData" />
+            <div class="card-body text-center">
+                <form asp-action="Verify" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="file" name="photo" id="photo" class="form-control" />
+                    <input type="submit" value="Check Photo" class="btn btn-primary" />
+                </form>
+            </div>
+        </div>
     </div>
 </div>

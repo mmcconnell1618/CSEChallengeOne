@@ -70,3 +70,12 @@ body {
 {
     border-color:green;
 }
+
+.facelabel
+{
+    position:absolute;
+    border:solid 4px green;
+    color:green;
+    background:white;
+    padding: 3px 7px;
+}
